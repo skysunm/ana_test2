@@ -19,10 +19,12 @@ db_config = {
 def get_db_connection():
     return pymysql.connect(**db_config)
 
+# ✅ 홈 페이지 (지도)
 @app.route('/')
 def home():
     return render_template("index.html")
 
+# ✅ 좌표 저장
 @app.route('/save_coords', methods=['POST'])
 def save_coords():
     data = request.get_json()
@@ -37,6 +39,7 @@ def save_coords():
     conn.close()
     return jsonify({'status': 'success'})
 
+# ✅ 좌표 목록 JSON 반환 (지도에 표시용)
 @app.route('/get_coords', methods=['GET'])
 def get_coords():
     conn = get_db_connection()
@@ -48,6 +51,7 @@ def get_coords():
     result = [{'lat': r[0], 'lng': r[1], 'address': r[2]} for r in rows]
     return jsonify(result)
 
+# ✅ 좌표 삭제
 @app.route('/delete_coords', methods=['POST'])
 def delete_coords():
     data = request.get_json()
@@ -61,6 +65,7 @@ def delete_coords():
     conn.close()
     return jsonify({'status': 'deleted'})
 
+# ✅ 관리자용 전체 JSON 목록
 @app.route('/admin/coords')
 def admin_coords():
     conn = get_db_connection()
@@ -72,7 +77,7 @@ def admin_coords():
     result = [{'id': r[0], 'lat': r[1], 'lng': r[2], 'address': r[3]} for r in rows]
     return jsonify(result)
 
-# ✅ 테이블 페이지 라우트 추가
+# ✅ 웹 테이블 페이지
 @app.route('/table')
 def coords_table():
     conn = get_db_connection()
@@ -82,6 +87,7 @@ def coords_table():
     conn.close()
     return render_template("table.html", coords=rows)
 
+# ✅ 앱 실행
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
