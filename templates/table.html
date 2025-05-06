@@ -4,22 +4,26 @@
   <meta charset="utf-8">
   <title>저장된 좌표 목록</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      padding: 30px;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; padding: 20px; }
+    h2 { color: #333; }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
+      border: 1px solid #ddd;
+      padding: 12px;
       text-align: center;
     }
     th {
-      background-color: #f5f5f5;
+      background-color: #4CAF50;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
     }
   </style>
 </head>
@@ -36,13 +40,13 @@
       </tr>
     </thead>
     <tbody>
-      {% for row in rows %}
+      {% for row in coords %}
       <tr>
-        <td>{{ row[0] }}</td>
-        <td>{{ row[1] }}</td>
-        <td>{{ row[2] }}</td>
-        <td>{{ row[3] }}</td>
-        <td>{{ row[4] }}</td>
+        <td>{{ row.id }}</td>
+        <td>{{ row.lat }}</td>
+        <td>{{ row.lng }}</td>
+        <td>{{ row.address }}</td>
+        <td>{{ row.created_at }}</td>
       </tr>
       {% endfor %}
     </tbody>
