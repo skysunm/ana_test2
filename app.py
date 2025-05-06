@@ -1,21 +1,17 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify
 import pymysql
 import os
 
 app = Flask(__name__)
 
-# ✅ 한글 및 이모지 깨짐 방지 설정
-app.config['JSON_AS_ASCII'] = False
-app.json.ensure_ascii = False
-
-# ✅ MySQL DB 접속 설정
+# ✅ MySQL DB 설정
 db_config = {
-    'host': os.environ.get('MYSQL_HOST', 'metro.proxy.rlwy.net'),
+    'host': os.environ.get('MYSQL_HOST', 'containers-us-west-179.railway.app'),
     'user': os.environ.get('MYSQL_USER', 'root'),
-    'password': os.environ.get('MYSQL_PASSWORD', 'PjHVnNakvTZvDCYwcurlJxuvoJOLohAC'),
+    'password': os.environ.get('MYSQL_PASSWORD', 'your_password'),
     'database': os.environ.get('MYSQL_DATABASE', 'railway'),
-    'port': int(os.environ.get('MYSQL_PORT', 22720)),
-    'charset': 'utf8mb4'  # ✅ 문자 인코딩 설정 추가
+    'port': int(os.environ.get('MYSQL_PORT', 3306)),
+    'charset': 'utf8mb4'  # Unicode 오류 방지
 }
 
 def get_db_connection():
@@ -25,7 +21,6 @@ def get_db_connection():
 def home():
     return render_template("index.html")
 
-# ✅ 좌표 저장
 @app.route('/save_coords', methods=['POST'])
 def save_coords():
     data = request.get_json()
@@ -40,7 +35,6 @@ def save_coords():
     conn.close()
     return jsonify({'status': 'success'})
 
-# ✅ 좌표 목록 조회
 @app.route('/get_coords', methods=['GET'])
 def get_coords():
     conn = get_db_connection()
@@ -48,11 +42,9 @@ def get_coords():
     c.execute("SELECT lat, lng, address FROM coordinates")
     rows = c.fetchall()
     conn.close()
-
     result = [{'lat': r[0], 'lng': r[1], 'address': r[2]} for r in rows]
     return jsonify(result)
 
-# ✅ 좌표 삭제
 @app.route('/delete_coords', methods=['POST'])
 def delete_coords():
     data = request.get_json()
@@ -66,17 +58,15 @@ def delete_coords():
     conn.close()
     return jsonify({'status': 'deleted'})
 
-# ✅ 관리자용 전체 목록 조회
-@app.route('/admin/coords')
-def admin_coords():
+# ✅ 저장된 좌표를 웹 테이블로 출력
+@app.route('/table')
+def coords_table():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM coordinates")
+    c.execute("SELECT id, lat, lng, address FROM coordinates")
     rows = c.fetchall()
     conn.close()
-
-    result = [{'id': r[0], 'lat': r[1], 'lng': r[2], 'address': r[3]} for r in rows]
-    return jsonify(result)
+    return render_template('table.html', coords=rows)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
