@@ -6,29 +6,36 @@
   <style>
     body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; padding: 20px; }
     h2 { color: #333; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    form { margin-bottom: 20px; }
+    input[type="text"], input[type="date"] {
+      padding: 8px; margin-right: 10px;
+      border: 1px solid #ccc; border-radius: 4px;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: center;
-    }
-    th {
+    button {
+      padding: 8px 16px;
       background-color: #4CAF50;
-      color: white;
+      color: white; border: none;
+      border-radius: 4px;
     }
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
+    table {
+      width: 100%; border-collapse: collapse;
+      background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+    th { background-color: #4CAF50; color: white; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
   </style>
 </head>
 <body>
   <h2>📋 저장된 좌표 목록</h2>
+
+  <!-- 🔍 검색 필터 -->
+  <form method="POST">
+    <input type="date" name="date" placeholder="날짜">
+    <input type="text" name="keyword" placeholder="주소 또는 키워드">
+    <button type="submit">검색</button>
+  </form>
+
   <table>
     <thead>
       <tr>

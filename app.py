@@ -32,7 +32,7 @@ def save_coords():
 
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("INSERT INTO coordinates (lat, lng, address) VALUES (%s, %s, %s)", (lat, lng, address))
+    c.execute("INSERT INTO coordinates (lat, lng, address, created_at) VALUES (%s, %s, %s, NOW())", (lat, lng, address))
     conn.commit()
     conn.close()
     return jsonify({'status': 'success'})
@@ -70,12 +70,28 @@ def admin_coords():
     result = [{'id': r[0], 'lat': r[1], 'lng': r[2], 'address': r[3], 'created_at': r[4]} for r in rows]
     return jsonify(result)
 
-# ✅ 📋 테이블 페이지 라우트
-@app.route('/table')
+# ✅ 📋 테이블 페이지 + 필터링
+@app.route('/table', methods=['GET', 'POST'])
 def coords_table():
+    query = "SELECT id, lat, lng, address, created_at FROM coordinates WHERE 1=1"
+    filters = []
+    args = []
+
+    if request.method == 'POST':
+        date = request.form.get('date')
+        keyword = request.form.get('keyword')
+
+        if date:
+            query += " AND DATE(created_at) = %s"
+            args.append(date)
+
+        if keyword:
+            query += " AND address LIKE %s"
+            args.append(f"%{keyword}%")
+
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT id, lat, lng, address, created_at FROM coordinates")
+    c.execute(query, args)
     rows = c.fetchall()
     conn.close()
     return render_template("table.html", coords=rows)
