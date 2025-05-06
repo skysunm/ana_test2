@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>카카오 지도 삭제 기능 포함</title>
+
+  <!-- ✅ 외부 CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <!-- ✅ Kakao Maps SDK: autoload false 설정 -->
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f3431dbe0250d319e254837045e1ef8a&libraries=services"></script>
+</head>
+<body>
+  <h2>📍 카카오 지도</h2>
+  <div id="map"></div>
+  <div id="coords">🧭 클릭한 위치의 좌표와 주소가 여기에 표시됩니다.</div>
+
+  <script>
+    window.onload = function () {
+      kakao.maps.load(() => {
+        const mapContainer = document.getElementById('map');
+        const mapOption = {
+          center: new kakao.maps.LatLng(37.5665, 126.9780),
+          level: 3
+        };
+        const map = new kakao.maps.Map(mapContainer, mapOption);
+        const geocoder = new kakao.maps.services.Geocoder();
+        const infowindow = new kakao.maps.InfoWindow(); // 재사용용
+
+        // ✅ 저장된 좌표 마커 표시
+        fetch('/get_coords')
+          .then(res => res.json())
+          .then(data => {
+            data.forEach(({ lat, lng, address }) => {
+              const pos = new kakao.maps.LatLng(lat, lng);
+              const marker = new kakao.maps.Marker({ position: pos, map });
+
+              kakao.maps.event.addListener(marker, 'click', () => {
+                if (confirm("이 마커를 삭제하시겠습니까?")) {
+                  fetch('/delete_coords', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lat, lng })
+                  }).then(() => marker.setMap(null));
+                } else {
+                  infowindow.setContent(`<div style="padding:5px;">${address}</div>`);
+                  infowindow.open(map, marker);
+                }
+              });
+            });
+          });
+
+        // ✅ 지도 클릭 시 저장
+        kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+          const latlng = mouseEvent.latLng;
+          if (!confirm("이 위치를 저장하시겠습니까?")) return;
+
+          geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function (result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+              const address = result[0].address.address_name;
+
+              document.getElementById('coords').innerHTML =
+                `📌 위도: ${latlng.getLat().toFixed(6)}, 경도: ${latlng.getLng().toFixed(6)}<br>🏠 주소: ${address}`;
+
+              fetch('/save_coords', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  lat: latlng.getLat(),
+                  lng: latlng.getLng(),
+                  address: address
+                })
+              }).then(() => {
+                const marker = new kakao.maps.Marker({ position: latlng, map });
+
+                kakao.maps.event.addListener(marker, 'click', () => {
+                  if (confirm("이 마커를 삭제하시겠습니까?")) {
+                    fetch('/delete_coords', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        lat: latlng.getLat(),
+                        lng: latlng.getLng()
+                      })
+                    }).then(() => marker.setMap(null));
+                  } else {
+                    infowindow.setContent(`<div style="padding:5px;">${address}</div>`);
+                    infowindow.open(map, marker);
+                  }
+                });
+              });
+            }
+          });
+        });
+      });
+    };
+  </script>
+</body>
+</html>
