@@ -6,11 +6,11 @@ app = Flask(__name__)
 
 # ✅ MySQL DB 접속 설정
 db_config = {
-    'host': os.environ.get('MYSQL_HOST', 'mysql.railway.internal'),
+    'host': os.environ.get('MYSQL_HOST', 'metro.proxy.rlwy.net'),
     'user': os.environ.get('MYSQL_USER', 'root'),
     'password': os.environ.get('MYSQL_PASSWORD', 'PjHVnNakvTZvDCYwcurlJxuvoJOLohAC'),
     'database': os.environ.get('MYSQL_DATABASE', 'railway'),
-    'port': int(os.environ.get('MYSQL_PORT', 3306)),
+    'port': int(os.environ.get('MYSQL_PORT', 22720)),
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.Cursor
 }
